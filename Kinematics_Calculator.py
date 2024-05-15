@@ -2,15 +2,41 @@
 # Created by: Khen Jomarie L. Alcantara
 # Degree: BS Electronics And Communication Engineering
 # Level: 1st Year
-
+import fractions
 # Import library
 import os
 import ctypes
 from ctypes import wintypes
 import sys
+import sympy
 
 # Initialize variable
 columns = 0
+topics = {
+    1: "Displacement, Time Interval, and Average Velocity",
+    2: "Instantaneous Velocity",
+    3: "Average and Instantaneous Acceleration",
+    4: "Constant Acceleration",
+    5: "Free Fall",
+    6: "Finding Velocity and Displacement from Acceleration"
+}
+p_i, p_f, v_i, v_f, a, t = sympy.symbols('p_i p_f v_i v_f a t')
+
+
+class Kinematic:
+
+    Given = {}
+
+    Unknown = []
+
+    Equation = {
+        1: sympy.Eq(v_f, v_i + a * t),
+        2: sympy.Eq(p_f - p_i, v_i * t + 0.5 * a * t**2),
+        3: sympy.Eq(v_f**2, v_i**2 + 2 * a * (p_f - p_i)),
+        4: sympy.Eq(p_f - p_i, 0.5 * (v_i + v_f) * t)
+    }
+
+    Answer = {}
 
 
 # Function for requesting administration
@@ -130,10 +156,15 @@ def time_interval(t1, t2):
 
 def ave_velocity(_displacement, _time_interval):
     try:
-        average_velocity = displacement(_displacement, _time_interval)
+        average_velocity = _displacement / _time_interval
         return average_velocity
     except ZeroDivisionError:
         return 0
+
+
+def instantaneous_velocity(_equation, _time):
+    derivative = sympy.diff(_equation, t)
+    return round(float(derivative.subs(t, _time)), 2)
 
 
 # Main Function
@@ -145,26 +176,30 @@ def main():
 
     # Option
     print("      TOPICS:")
-    print("         [1] Displacement, Time Interval, and Average Velocity")
-    print("         [2] Instantaneous Velocity")
-    print("         [3] Average and Instantaneous Acceleration")
-    print("         [4] Constant Acceleration")
-    print("         [5] Free Fall")
-    print("         [6] Finding Velocity and Displacement from Acceleration")
+    for key, topic in topics.items():
+        print(f"         [{key}] {topic}")
+
     print("         [0] Exit\n")
 
-    while True:
-        choice = int_input("      Select a topic: ")
-        if choice in range(0, 7):
-            clear(10)
-            if choice == 1:
-                Displacement_TimeInterval_AverageVelocity()
-            break
+    selection = False
+    while not selection:
+        select = int_input("      Select a topic: ")
+        clear(10)
+        for key, topic in topics.items():
+            if key == select:
+                print(topic.upper().center(columns))
+                _topic = (topic.replace(" from ", "_from_").replace(", and ", "_").replace(", ", "_")
+                          .replace(" ", "").replace("and", "_"))
+                print("")
+                globals()[_topic]()
+                selection = True
+                break
         else:
             clear(1)
             continue
 
-    print("\n", end="")
+    print("\n\n", end="")
+    print(("-" * 68).center(columns))
     while True:
         choice = input("      Select [Y] to exit or [N] to continue: ").upper()
         if choice == "y".upper():
@@ -178,7 +213,6 @@ def main():
 
 
 def Displacement_TimeInterval_AverageVelocity():
-    print("Displacement, Time Interval, and Average Velocity".upper().center(columns))
     print("      Displacement:")
     x1 = float_input("         Initial position(m): ")
     x2 = float_input("         Final position(m)  : ")
@@ -186,12 +220,218 @@ def Displacement_TimeInterval_AverageVelocity():
     print("      Time Interval:")
     t1 = float_input("         Initial time(s)    : ")
     t2 = float_input("         Final time(s)      : ")
-    print(("-" * 68).center(columns))
 
-    print("ANSWER".center(columns))
+    print("")
+    print(("-" * 68).center(columns))
+    print("ANSWER\n".center(columns))
     print(f"         Displacement     : {displacement(x1, x2)}m")
     print(f"         Time Interval    : {time_interval(t1, t2)}s")
     print(f"         Average Velocity : {ave_velocity(displacement(x1, x2), time_interval(t1, t2))}m/s")
+
+
+def InstantaneousVelocity():
+    expression = 0
+    while True:
+        try:
+            equation = input("      Enter the equation (20 + 5*t^2): ")
+            equation = equation.replace("^", "**")
+            expression = sympy.sympify(equation)
+            break
+        except TypeError:
+            clear(1)
+            continue
+        except sympy.SympifyError:
+            clear(1)
+            continue
+
+    time = float_input("      Enter the time(s)              : ")
+
+    print("")
+    print(("-" * 68).center(columns))
+    print("ANSWER\n".center(columns))
+    print(f"      Instantaneous Velocity: {instantaneous_velocity(expression, time)}m/s")
+
+
+def Average_InstantaneousAcceleration():
+    print("test")
+
+
+def ConstantAcceleration():
+    print("      Enter all the given (leave it blank if not given, or "'"?"'" if unknown): ")
+
+    for var, symbol in zip(["Initial position(m)", "Final position(m)", "Initial velocity(m/s)", "Final velocity(m/s)",
+                            "Acceleration(m/s²)", "Time(s)"], [p_i, p_f, v_i, v_f, a, t]):
+        while True:
+            user_input = input(f"         {var:<22}: ")
+            try:
+                if user_input:
+                    if user_input == "?":
+                        if p_i not in Kinematic.Unknown:
+                            Kinematic.Unknown.append(symbol)
+                            break
+                        elif p_f not in Kinematic.Given:
+                            if p_i not in Kinematic.Unknown:
+                                Kinematic.Given[symbol] = user_input
+                                break
+                            else:
+                                clear(1)
+                                continue
+                        else:
+                            Kinematic.Unknown.append(symbol)
+                            break
+                    Kinematic.Given[symbol] = float(user_input)
+                    break
+                else:
+                    if p_f not in Kinematic.Given and p_i not in Kinematic.Unknown:
+                        break
+                    else:
+                        clear(1)
+            except ValueError:
+                clear(1)
+
+    if p_i in Kinematic.Unknown:
+        if v_i in Kinematic.Unknown:
+            Kinematic.Answer[v_i] = sympy.solve(Kinematic.Equation[1].subs(Kinematic.Given), v_i)[0]
+            Kinematic.Given[v_i] = Kinematic.Answer[v_i]
+
+        Kinematic.Answer[p_i] = sympy.solve(Kinematic.Equation[2].subs(Kinematic.Given), p_i)[0]
+
+    print(Kinematic.Unknown)
+    print(Kinematic.Given)
+
+    print("")
+    print(("-" * 68).center(columns))
+    print("ANSWER\n".center(columns))
+    for var in Kinematic.Unknown:
+        if var == p_i:
+            print(f"      Initial position: {Kinematic.Answer[p_i]}")
+        elif var == p_f:
+            print(f"      Final position:")
+        elif var == v_i:
+            print(f"      Initial velocity: {Kinematic.Answer[v_i]}")
+        elif var == v_f:
+            print(f"      Final velocity:")
+        elif var == a:
+            print(f"      Acceleration:")
+        elif var == t:
+            print(f"      Time:")
+
+
+def FreeFall():
+    print("Free_Fall")
+
+
+def convert_to_fraction(expression):
+    expression = sympy.sympify(expression)
+    coefficients = expression.as_coefficients_dict()
+    fraction_coefficients = {var: fractions.Fraction(str(coe)).limit_denominator() for var, coe in
+                             coefficients.items()}
+    return sum(frac * var for var, frac in fraction_coefficients.items())
+
+
+def FindingVelocity_Displacement_from_Acceleration():
+    print("      Select an option you want to solve:")
+    print("         [1] Velocity and Position")
+    print("         [3] Time and Position at maximum Velocity")
+    print("")
+
+    while True:
+        select = input("      Select: ")
+        print(("-" * 68).center(columns))
+        if select == "1":
+            print("Solve for Velocity and Position".center(columns))
+            break
+        elif select == "2":
+            print("Solve for Initial Velocity and Initial Position".center(columns))
+            break
+        else:
+            clear(2)
+
+    print("")
+    while True:
+        try:
+            print("         Sample equation: (1.50 * t) - (0.120 * t^2)")
+            equation = input("         Enter the equation: ")
+            equation = equation.replace("^", "**")
+            equation = sympy.sympify(equation)
+            if equation.has(t):
+                break
+            else:
+                clear(2)
+        except TypeError:
+            clear(2)
+        except sympy.SympifyError:
+            clear(2)
+
+    x = sympy.Symbol("x")
+    v = sympy.Symbol("v")
+    c = sympy.Symbol("c")
+    print("")
+    if select == "1":
+        initial_velocity = None
+        initial_v_time = None
+        v_time = None
+        initial_position = None
+        initial_p_time = None
+        p_time = None
+        while True:
+            try:
+                if initial_velocity is None:
+                    initial_velocity = float(input("         Enter the given velocity(m/s)      : "))
+
+                if initial_v_time is None:
+                    initial_v_time = float(input("         Enter the given time(s) of velocity: "))
+
+                if v_time is None:
+                    v_time = float(input("         Get the velocity at what time(s)?  : "))
+
+                if initial_position is None:
+                    initial_position = float(input("         Enter the given position(m)        : "))
+
+                if initial_p_time is None:
+                    initial_p_time = float(input("         Enter the given time(s) of position: "))
+
+                if p_time is None:
+                    p_time = float(input("         Get the position at what time(s)?  : "))
+                break
+            except ValueError:
+                clear(1)
+
+        first_integration = sympy.integrate(equation, t)
+        velocity_function = sympy.Eq(v, first_integration + c)
+
+        c_velocity = sympy.solve(velocity_function.subs({v: initial_velocity, t: initial_v_time}), c)[0]
+
+        second_integration = sympy.integrate(first_integration + c_velocity, t)
+        position_function = sympy.Eq(x, second_integration + c)
+
+        c_position = sympy.solve(position_function.subs({x: initial_position, t: initial_p_time}), c)[0]
+
+        velocity = round(float(sympy.solve(velocity_function.subs({t: v_time, c: c_velocity}), v)[0]), 2)
+        position = round(float(sympy.solve(position_function.subs({t: p_time, c: c_position}), x)[0]), 2)
+        formatted_velocity_function = f"v = {convert_to_fraction(first_integration)} + {c}"
+        formatted_position_function = f"x = {convert_to_fraction(second_integration)} + {c}"
+
+        print("")
+        print(("-" * 68).center(columns))
+        print("ANSWER\n".center(columns))
+        print(f"         Velocity function  : {str(formatted_velocity_function).replace("**", "^")}")
+        print(f"         Position function  : {str(formatted_position_function).replace("**", "^")}")
+        print(f"         Velocity at {f"{v_time}"+"s":<7}: {velocity}m/s")
+        print(f"         Position at {f"{p_time}"+"s":<7}: {position}m")
+    elif select == "2":
+        initial_velocity = None
+        initial_position = None
+        while True:
+            try:
+                if initial_velocity is None:
+                    initial_velocity = float(input("         Get initial velocity at what time(s)? "))
+
+                if initial_position is None:
+                    initial_position = float(input("         Get initial position at what time(s)? "))
+                break
+            except ValueError:
+                clear(1)
 
 
 if __name__ == "__main__":
