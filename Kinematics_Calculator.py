@@ -331,18 +331,18 @@ def convert_to_fraction(expression):
 
 def FindingVelocity_Displacement_from_Acceleration():
     print("      Select an option you want to solve:")
-    print("         [1] Velocity and Position")
-    print("         [3] Time and Position at maximum Velocity")
+    print("         [1] Velocity and Displacement")
+    print("         [2] Time at Maximum Velocity and Maximum Displacement")
     print("")
 
     while True:
         select = input("      Select: ")
         print(("-" * 68).center(columns))
         if select == "1":
-            print("Solve for Velocity and Position".center(columns))
+            print("Solve for Velocity and Displacement".center(columns))
             break
         elif select == "2":
-            print("Solve for Initial Velocity and Initial Position".center(columns))
+            print("Solve for Time at Maximum Velocity and Maximum Displacement".center(columns))
             break
         else:
             clear(2)
@@ -351,10 +351,11 @@ def FindingVelocity_Displacement_from_Acceleration():
     while True:
         try:
             print("         Sample equation: (1.50 * t) - (0.120 * t^2)")
-            equation = input("         Enter the equation: ")
+            equation = input("         Enter the acceleration equation: ")
             equation = equation.replace("^", "**")
             equation = sympy.sympify(equation)
-            if equation.has(t):
+
+            if equation.free_symbols == {t}:
                 break
             else:
                 clear(2)
@@ -366,72 +367,87 @@ def FindingVelocity_Displacement_from_Acceleration():
     x = sympy.Symbol("x")
     v = sympy.Symbol("v")
     c = sympy.Symbol("c")
+
     print("")
+    given_velocity = None
+    given_v_time = None
+    at_v_time = None
+    max_velocity = None
+    given_position = None
+    given_p_time = None
+    at_p_time = None
+    max_position = None
+    while True:
+        try:
+            if given_velocity is None:
+                given_velocity = float(input("         Enter the given velocity(m/s)          : "))
+
+            if given_v_time is None:
+                given_v_time = float(input("         Enter the given time(s) of velocity    : "))
+
+            if select == "1":
+                if at_v_time is None:
+                    at_v_time = float(input("         Get the velocity at what time(s)?      : "))
+                    print("")
+            elif select == "2":
+                if max_velocity is None:
+                    max_velocity = float(input("         Enter the maximum velocity(m/s)        : "))
+                    print("")
+
+            if given_position is None:
+                given_position = float(input("         Enter the given position(m)            : "))
+
+            if given_p_time is None:
+                given_p_time = float(input("         Enter the given time(s) of position    : "))
+
+            if select == "1":
+                if at_p_time is None:
+                    at_p_time = float(input("         Get the displacement at what time(s)?  : "))
+            elif select == "2":
+                if max_position is None:
+                    max_position = float(input("         Enter the maximum position(m)          : "))
+            break
+        except ValueError:
+            clear(1)
+
+    first_integration = sympy.integrate(equation, t)
+    velocity_equation = sympy.Eq(v, first_integration + c)
+    c_velocity = sympy.solve(velocity_equation.subs({v: given_velocity, t: given_v_time}), c)[0]
+    velocity_function = sympy.Eq(v, first_integration + c_velocity)
+
+    second_integration = sympy.integrate(velocity_function.rhs, t)
+    displacement_function = sympy.Eq(x, second_integration + c)
+    c_displacement = sympy.solve(displacement_function.subs({x: given_position, t: given_p_time}), c)[0]
+    displacement_function = sympy.Eq(x, second_integration + c_displacement)
+
+    formatted_velocity_function = f"v = {convert_to_fraction(velocity_function.rhs)}"
+    formatted_displacement_function = f"x = {convert_to_fraction(displacement_function.rhs)}"
+
+    print("")
+    print(("-" * 68).center(columns))
+    print("ANSWER\n".center(columns))
+    print(f"         Velocity function      : {str(formatted_velocity_function).replace("**", "^")}")
+    print(f"         Displacement function  : {str(formatted_displacement_function).replace("**", "^")}")
+
     if select == "1":
-        initial_velocity = None
-        initial_v_time = None
-        v_time = None
-        initial_position = None
-        initial_p_time = None
-        p_time = None
-        while True:
-            try:
-                if initial_velocity is None:
-                    initial_velocity = float(input("         Enter the given velocity(m/s)      : "))
+        _velocity = round(float(sympy.solve(velocity_function.subs({t: at_v_time}), v)[0]), 2)
+        _displacement = round(float(sympy.solve(displacement_function.subs({t: at_p_time}), x)[0]), 2)
 
-                if initial_v_time is None:
-                    initial_v_time = float(input("         Enter the given time(s) of velocity: "))
-
-                if v_time is None:
-                    v_time = float(input("         Get the velocity at what time(s)?  : "))
-
-                if initial_position is None:
-                    initial_position = float(input("         Enter the given position(m)        : "))
-
-                if initial_p_time is None:
-                    initial_p_time = float(input("         Enter the given time(s) of position: "))
-
-                if p_time is None:
-                    p_time = float(input("         Get the position at what time(s)?  : "))
-                break
-            except ValueError:
-                clear(1)
-
-        first_integration = sympy.integrate(equation, t)
-        velocity_function = sympy.Eq(v, first_integration + c)
-
-        c_velocity = sympy.solve(velocity_function.subs({v: initial_velocity, t: initial_v_time}), c)[0]
-
-        second_integration = sympy.integrate(first_integration + c_velocity, t)
-        position_function = sympy.Eq(x, second_integration + c)
-
-        c_position = sympy.solve(position_function.subs({x: initial_position, t: initial_p_time}), c)[0]
-
-        velocity = round(float(sympy.solve(velocity_function.subs({t: v_time, c: c_velocity}), v)[0]), 2)
-        position = round(float(sympy.solve(position_function.subs({t: p_time, c: c_position}), x)[0]), 2)
-        formatted_velocity_function = f"v = {convert_to_fraction(first_integration)} + {c}"
-        formatted_position_function = f"x = {convert_to_fraction(second_integration)} + {c}"
-
-        print("")
-        print(("-" * 68).center(columns))
-        print("ANSWER\n".center(columns))
-        print(f"         Velocity function  : {str(formatted_velocity_function).replace("**", "^")}")
-        print(f"         Position function  : {str(formatted_position_function).replace("**", "^")}")
-        print(f"         Velocity at {f"{v_time}"+"s":<7}: {velocity}m/s")
-        print(f"         Position at {f"{p_time}"+"s":<7}: {position}m")
+        print(f"         Velocity at {f"{at_v_time}"+"s":<11}: {_velocity}m/s")
+        print(f"         displacement at {f"{at_p_time}"+"s":<7}: {_displacement}m")
     elif select == "2":
-        initial_velocity = None
-        initial_position = None
-        while True:
-            try:
-                if initial_velocity is None:
-                    initial_velocity = float(input("         Get initial velocity at what time(s)? "))
+        v_time = sympy.solve(velocity_function.subs({v: max_velocity}), t)
+        d_time = sympy.solve(displacement_function.subs({x: max_position}), t)
 
-                if initial_position is None:
-                    initial_position = float(input("         Get initial position at what time(s)? "))
-                break
-            except ValueError:
-                clear(1)
+        v_total_time = ", ".join(f"{x}s" for x in [round(float(time), 2)
+                                                   for time in v_time if time.is_real and time > 0])
+        p_total_time = ", ".join(f"{x}s" for x in [round(float(time), 2)
+                                                   for time in d_time if time.is_real and time > 0])
+        if not p_total_time:
+            p_total_time = ", ".join(f"{x}s" for x in [round(float(time.as_real_imag()[0]), 2) for time in d_time])
+
+        print(f"         Time at max velocity is    : {v_total_time}")
+        print(f"         Time at max displacement is: {p_total_time}")
 
 
 if __name__ == "__main__":
