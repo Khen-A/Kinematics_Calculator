@@ -270,6 +270,10 @@ def Average_InstantaneousAcceleration():
     print("test")
 
 
+def get_positive_result(answer):
+    return max((float(x) for x in answer if float(x) > 0), default=None)
+
+
 def ConstantAcceleration():
     print("      Enter all the given (leave it blank if not given, or "'"?"'" if unknown): ")
     print("      NOTE: Only two unknown variables can solve except, for displacement.\n"
@@ -322,124 +326,120 @@ def ConstantAcceleration():
         elif var == t:
             _t = val
 
-    while True:
-        if t in Kinematic.Unknown:
-            answer = None
-            if all(x in Kinematic.Given for x in [v_i, v_f, a]):
-                equation = Kinematic.Equation[1]
-                answer = sympy.solve(equation.subs({v_i: _v_i, v_f: _v_f, a: _a}), t)
-            elif all(x in Kinematic.Given for x in [v_i, a, p_i, p_f]):
-                equation = Kinematic.Equation[2]
-                answer = sympy.solve(equation.subs({v_i: _v_i, a: _a, p_i: _p_i, p_f: _p_f}), t)
-            elif all(x in Kinematic.Given for x in [v_i, v_f, p_i, p_f]):
-                equation = Kinematic.Equation[4]
-                answer = sympy.solve(equation.subs({v_i: _v_i, v_f: _v_f, p_i: _p_i, p_f: _p_f}), t)
+    while len(Kinematic.Unknown) > 0:
+        for var in Kinematic.Unknown:
+            if var == t:
+                answer = None
+                if all(x in Kinematic.Given for x in [v_i, v_f, a]):
+                    equation = Kinematic.Equation[1]
+                    answer = sympy.solve(equation.subs({v_i: _v_i, v_f: _v_f, a: _a}), t)
+                elif all(x in Kinematic.Given for x in [v_i, a, p_i, p_f]):
+                    equation = Kinematic.Equation[2]
+                    answer = sympy.solve(equation.subs({v_i: _v_i, a: _a, p_i: _p_i, p_f: _p_f}), t)
+                elif all(x in Kinematic.Given for x in [v_i, v_f, p_i, p_f]):
+                    equation = Kinematic.Equation[4]
+                    answer = sympy.solve(equation.subs({v_i: _v_i, v_f: _v_f, p_i: _p_i, p_f: _p_f}), t)
 
-            if len(answer) > 0:
-                for x in answer:
-                    if float(x) > 0:
-                        answer = x
+                answer = get_positive_result(answer)
+                answer = round(float(answer), 2)
+                Kinematic.Given[t] = answer
+                Kinematic.Answer[t] = answer
+                _t = answer
+                Kinematic.Unknown.remove(t)
 
-            answer = round(float(answer), 2)
-            Kinematic.Given[t] = answer
-            Kinematic.Answer[t] = answer
-            _t = answer
-            Kinematic.Unknown.remove(t)
+            elif var == a:
+                answer = None
+                if all(x in Kinematic.Given for x in [v_i, v_f, t]):
+                    equation = Kinematic.Equation[1]
+                    answer = sympy.solve(equation.subs({v_i: _v_i, v_f: _v_f, t: _t}), a)[0]
+                elif all(x in Kinematic.Given for x in [p_i, p_f, v_i, t]):
+                    equation = Kinematic.Equation[2]
+                    answer = sympy.solve(equation.subs({p_i: _p_i, p_f: _p_f, v_i: _v_i, t: _t}), a)[0]
+                elif all(x in Kinematic.Given for x in [v_i, v_f, p_i, p_f]):
+                    equation = Kinematic.Equation[3]
+                    answer = sympy.solve(equation.subs({v_i: _v_i, v_f: _v_f, p_i: _p_i, p_f: _p_f}), a)[0]
 
-        elif a in Kinematic.Unknown:
-            answer = None
-            if all(x in Kinematic.Given for x in [v_i, v_f, t]):
-                equation = Kinematic.Equation[1]
-                answer = sympy.solve(equation.subs({v_i: _v_i, v_f: _v_f, t: _t}), a)[0]
-            elif all(x in Kinematic.Given for x in [p_i, p_f, v_i, t]):
-                equation = Kinematic.Equation[2]
-                answer = sympy.solve(equation.subs({p_i: _p_i, p_f: _p_f, v_i: _v_i, t: _t}), a)[0]
-            elif all(x in Kinematic.Given for x in [v_i, v_f, p_i, p_f]):
-                equation = Kinematic.Equation[3]
-                answer = sympy.solve(equation.subs({v_i: _v_i, v_f: _v_f, p_i: _p_i, p_f: _p_f}), a)[0]
+                answer = round(float(answer), 2)
+                Kinematic.Given[a] = answer
+                Kinematic.Answer[a] = answer
+                _a = answer
+                Kinematic.Unknown.remove(a)
 
-            answer = round(float(answer), 2)
-            Kinematic.Given[a] = answer
-            Kinematic.Answer[a] = answer
-            _a = answer
-            Kinematic.Unknown.remove(a)
+            elif var == v_i:
+                answer = None
+                if all(x in Kinematic.Given for x in [v_f, a, t]):
+                    equation = Kinematic.Equation[1]
+                    answer = sympy.solve(equation.subs({v_f: _v_f, a: _a, t: _t}), v_i)
+                elif all(x in Kinematic.Given for x in [p_i, p_f, a, t]):
+                    equation = Kinematic.Equation[2]
+                    answer = sympy.solve(equation.subs({p_i: _p_i, p_f: _p_f, a: _a, t: _t}), v_i)
+                elif all(x in Kinematic.Given for x in [p_i, p_f, v_f, a]):
+                    equation = Kinematic.Equation[3]
+                    answer = sympy.solve(equation.subs({p_i: _p_i, p_f: _p_f, v_f: _v_f, a: _a}), v_i)
+                elif all(x in Kinematic.Given for x in [v_f, p_i, p_f, t]):
+                    equation = Kinematic.Equation[4]
+                    answer = sympy.solve(equation.subs({v_f: _v_f, p_i: _p_i, p_f: _p_f, t: _t}), v_i)
 
-        elif v_f in Kinematic.Unknown:
-            answer = None
-            if all(x in Kinematic.Given for x in [v_i, a, t]):
-                equation = Kinematic.Equation[1]
-                answer = sympy.solve(equation.subs({v_i: _v_i, a: _a, t: _t}), v_f)[0]
-            elif all(x in Kinematic.Given for x in [v_i, a, p_i, p_f]):
-                equation = Kinematic.Equation[3]
-                answer = sympy.solve(equation.subs({v_i: _v_i, a: _a, p_i: _p_i, p_f: _p_f}), v_f)[0]
-            elif all(x in Kinematic.Given for x in [p_i, p_f, v_i, t]):
-                equation = Kinematic.Equation[4]
-                answer = sympy.solve(equation.subs({p_i: _p_i, p_f: _p_f, v_i: _v_i, t: _t}), v_f)[0]
+                answer = get_positive_result(answer)
+                answer = round(float(answer), 2)
+                Kinematic.Given[v_i] = answer
+                Kinematic.Answer[v_i] = answer
+                _v_i = answer
+                Kinematic.Unknown.remove(v_i)
 
-            answer = round(float(answer), 2)
-            Kinematic.Given[v_f] = answer
-            Kinematic.Answer[v_f] = answer
-            _v_f = answer
-            Kinematic.Unknown.remove(v_f)
+            elif var == v_f:
+                answer = None
+                if all(x in Kinematic.Given for x in [v_i, a, t]):
+                    equation = Kinematic.Equation[1]
+                    answer = sympy.solve(equation.subs({v_i: _v_i, a: _a, t: _t}), v_f)[0]
+                elif all(x in Kinematic.Given for x in [v_i, a, p_i, p_f]):
+                    equation = Kinematic.Equation[3]
+                    answer = sympy.solve(equation.subs({v_i: _v_i, a: _a, p_i: _p_i, p_f: _p_f}), v_f)[0]
+                elif all(x in Kinematic.Given for x in [p_i, p_f, v_i, t]):
+                    equation = Kinematic.Equation[4]
+                    answer = sympy.solve(equation.subs({p_i: _p_i, p_f: _p_f, v_i: _v_i, t: _t}), v_f)[0]
 
-        elif v_i in Kinematic.Unknown:
-            answer = None
-            if all(x in Kinematic.Given for x in [v_f, a, t]):
-                equation = Kinematic.Equation[1]
-                answer = sympy.solve(equation.subs({v_f: _v_f, a: _a, t: _t}), v_i)[0]
-            elif all(x in Kinematic.Given for x in [p_i, p_f, a, t]):
-                equation = Kinematic.Equation[2]
-                answer = sympy.solve(equation.subs({p_i: _p_i, p_f: _p_f, a: _a, t: _t}), v_i)[0]
-            elif all(x in Kinematic.Given for x in [p_i, p_f, v_f, a]):
-                equation = Kinematic.Equation[3]
-                answer = sympy.solve(equation.subs({p_i: _p_i, p_f: _p_f, v_f: _v_f, a: _a}), v_i)[0]
-            elif all(x in Kinematic.Given for x in [v_f, p_i, p_f, t]):
-                equation = Kinematic.Equation[4]
-                answer = sympy.solve(equation.subs({v_f: _v_f, p_i: _p_i, p_f: _p_f, t: _t}), v_i)
+                answer = round(float(answer), 2)
+                Kinematic.Given[v_f] = answer
+                Kinematic.Answer[v_f] = answer
+                _v_f = answer
+                Kinematic.Unknown.remove(v_f)
 
-            answer = round(float(answer), 2)
-            Kinematic.Given[v_i] = answer
-            Kinematic.Answer[v_i] = answer
-            _v_i = answer
-            Kinematic.Unknown.remove(v_i)
+            elif var == p_f:
+                answer = None
+                if all(x in Kinematic.Given for x in [p_i, v_i, a, t]):
+                    equation = Kinematic.Equation[2]
+                    answer = sympy.solve(equation.subs({p_i: _p_i, v_i: _v_i, a: _a, t: _t}), p_f)[0]
+                elif all(x in Kinematic.Given for x in [v_f, v_i, a, p_i]):
+                    equation = Kinematic.Equation[3]
+                    answer = sympy.solve(equation.subs({v_f: _v_f, v_i: _v_i, a: _a, p_i: _p_i}), p_f)[0]
+                elif all(x in Kinematic.Given for x in [p_i, v_i, v_f, t]):
+                    equation = Kinematic.Equation[4]
+                    answer = sympy.solve(equation.subs({p_i: _p_i, v_i: _v_i, v_f: _v_f, t: _t}), p_f)[0]
 
-        elif p_f in Kinematic.Unknown:
-            answer = None
-            if all(x in Kinematic.Given for x in [p_i, v_i, a, t]):
-                equation = Kinematic.Equation[2]
-                answer = sympy.solve(equation.subs({p_i: _p_i, v_i: _v_i, a: _a, t: _t}), p_f)[0]
-            elif all(x in Kinematic.Given for x in [v_f, v_i, a, p_i]):
-                equation = Kinematic.Equation[3]
-                answer = sympy.solve(equation.subs({v_f: _v_f, v_i: _v_i, a: _a, p_i: _p_i}), p_f)[0]
-            elif all(x in Kinematic.Given for x in [p_i, v_i, v_f, t]):
-                equation = Kinematic.Equation[4]
-                answer = sympy.solve(equation.subs({p_i: _p_i, v_i: _v_i, v_f: _v_f, t: _t}), p_f)[0]
+                answer = round(float(answer), 2)
+                Kinematic.Given[p_f] = answer
+                Kinematic.Answer[p_f] = answer
+                _p_f = answer
+                Kinematic.Unknown.remove(p_f)
 
-            answer = round(float(answer), 2)
-            Kinematic.Given[p_f] = answer
-            Kinematic.Answer[p_f] = answer
-            _p_f = answer
-            Kinematic.Unknown.remove(p_f)
+            elif var == p_i:
+                answer = None
+                if all(x in Kinematic.Given for x in [p_f, v_i, v_f, t]):
+                    equation = Kinematic.Equation[4]
+                    answer = sympy.solve(equation.subs({p_f: p_f, v_i: _v_i, v_f: _v_f, t: _t}), p_i)[0]
+                elif all(x in Kinematic.Given for x in [v_f, v_i, a, p_f]):
+                    equation = Kinematic.Equation[3]
+                    answer = sympy.solve(equation.subs({v_f: _v_f, v_i: _v_i, a: _a, p_f: p_f}), p_i)[0]
+                elif all(x in Kinematic.Given for x in [p_f, v_i, a, t]):
+                    equation = Kinematic.Equation[2]
+                    answer = sympy.solve(equation.subs({p_f: p_f, v_i: _v_i, a: _a, t: _t}), p_i)[0]
 
-        elif p_i in Kinematic.Unknown:
-            answer = None
-            if all(x in Kinematic.Given for x in [p_i, v_i, v_f, t]):
-                equation = Kinematic.Equation[4]
-                answer = sympy.solve(equation.subs({p_f: p_f, v_i: _v_i, v_f: _v_f, t: _t}), p_i)[0]
-            elif all(x in Kinematic.Given for x in [v_f, v_i, a, p_f]):
-                equation = Kinematic.Equation[3]
-                answer = sympy.solve(equation.subs({v_f: _v_f, v_i: _v_i, a: _a, p_f: p_f}), p_i)[0]
-            elif all(x in Kinematic.Given for x in [p_f, v_i, a, t]):
-                equation = Kinematic.Equation[2]
-                answer = sympy.solve(equation.subs({p_f: p_f, v_i: _v_i, a: _a, t: _t}), p_i)[0]
-
-            answer = round(float(answer), 2)
-            Kinematic.Given[p_i] = answer
-            Kinematic.Answer[p_i] = answer
-            _p_i = answer
-            Kinematic.Unknown.remove(p_i)
-        else:
-            break
+                answer = round(float(answer), 2)
+                Kinematic.Given[p_i] = answer
+                Kinematic.Answer[p_i] = answer
+                _p_i = answer
+                Kinematic.Unknown.remove(p_i)
 
     print("")
     print(("-" * 68).center(columns))
@@ -591,16 +591,16 @@ def FindingVelocity_Displacement_from_Acceleration():
 
 if __name__ == "__main__":
     # Title of console
-    console_title = "Kinematics Calculator"
-
-    run_as_administrator()  # Request for administration privilege
-
-    # Check for single instances
-    if not is_single_instance(console_title):
-        exit()
-
-    set_console_title(console_title)  # Set the title of console
-    set_console_size(80, 40)  # Resizing of console
-    columns = os.get_terminal_size().columns  # Save the new column size
-    center_console_window()  # Align the console to center
+    # console_title = "Kinematics Calculator"
+    #
+    # run_as_administrator()  # Request for administration privilege
+    #
+    # # Check for single instances
+    # if not is_single_instance(console_title):
+    #     exit()
+    #
+    # set_console_title(console_title)  # Set the title of console
+    # set_console_size(80, 40)  # Resizing of console
+    # columns = os.get_terminal_size().columns  # Save the new column size
+    # center_console_window()  # Align the console to center
     main()  # Calling main function
