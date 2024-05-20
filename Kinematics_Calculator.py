@@ -2,6 +2,7 @@
 # Created by: Khen Jomarie L. Alcantara
 # Degree: BS Electronics And Communication Engineering
 # Level: 1st Year
+
 # Import library
 import os
 import ctypes
@@ -21,6 +22,9 @@ topics = {
     6: "Finding Velocity and Displacement from Acceleration"
 }
 p_i, p_f, v_i, v_f, a, t = sympy.symbols('p_i p_f v_i v_f a t')
+in_solving = False
+_topic = False
+selected = None
 
 
 class Kinematic:
@@ -179,47 +183,71 @@ def instantaneous_velocity(_equation, _time):
 
 # Main Function
 def main():
+    global in_solving
+    global _topic
+    global selected
+
     # Title
     print("╔" + "═" * 78 + "╗")
     print(f"║{"KINEMATICS CALCULATOR":^78}║")
     print("╚" + "═" * 78 + "╝")
 
-    # Option
-    print("      TOPICS:")
-    for key, topic in topics.items():
-        print(f"         [{key}] {topic}")
+    if not in_solving:
+        # Option
+        print("      TOPICS:")
+        for key, topic in topics.items():
+            print(f"         [{key}] {topic}")
 
-    print("         [0] Exit\n")
+        print("         [0] Exit\n")
 
-    selection = False
-    while not selection:
-        select = int_input("      Select a topic: ")
-        if select in range(1, 7):
-            clear(10)
-            for key, topic in topics.items():
-                if key == select:
-                    print(topic.upper().center(columns))
-                    _topic = (topic.replace(" from ", "_from_").replace(", and ", "_").replace(", ", "_")
-                              .replace(" ", "").replace("and", "_"))
-                    print("")
-                    globals()[_topic]()
-                    selection = True
-                    break
+        selection = None
+        while not selection:
+            selected = int_input("      Select a topic: ")
+            if selected in range(1, 7):
+                clear(10)
+                for key, topic in topics.items():
+                    if key == selected:
+                        print(topic.upper().center(columns))
+                        _topic = (topic.replace(" from ", "_from_").replace(", and ", "_").replace(", ", "_")
+                                  .replace(" ", "").replace("and", "_"))
+                        print("")
+
+                        if _topic == "ConstantAcceleration" or _topic == "FreeFall":
+                            ConstantAcceleration_FreeFall_Calculation(_topic)
+                        else:
+                            globals()[_topic]()
+                        selection = True
+                        break
+                else:
+                    clear(1)
+            elif selected == 0:
+                exit()
             else:
                 clear(1)
-        elif select == 0:
-            exit()
-        else:
-            clear(1)
+    else:
+        for key, topic in topics.items():
+            if key == selected:
+                print(topic.upper().center(columns))
+                print("")
+                if _topic == "ConstantAcceleration" or _topic == "FreeFall":
+                    ConstantAcceleration_FreeFall_Calculation(_topic)
+                else:
+                    globals()[_topic]()
 
     print("\n\n", end="")
-    print(("-" * 68).center(columns))
+    print(("-" * 74).center(columns))
+    print("[Y] Exit        [N] Solve Again        [H] Home".center(columns))
     while True:
-        choice = input("      Select [Y] to exit or [N] to continue: ").upper()
+        choice = input("      Select: ").upper()
         if choice == "y".upper():
             exit()
         elif choice == "n".upper():
             clear(100)
+            in_solving = True
+            return main()
+        elif choice == "h".upper():
+            clear(100)
+            in_solving = False
             return main()
         else:
             clear(1)
@@ -230,7 +258,7 @@ def Displacement_TimeInterval_AverageVelocity():
     print("      Displacement:")
     x1 = float_input("         Initial position(m): ")
     x2 = float_input("         Final position(m)  : ")
-    print(("-" * 68).center(columns))
+    print("")
     print("      Time Interval:")
     t1 = float_input("         Initial time(s)    : ")
     t2 = float_input("         Final time(s)      : ")
@@ -244,312 +272,74 @@ def Displacement_TimeInterval_AverageVelocity():
 
 
 def InstantaneousVelocity():
-    expression = 0
+    print("         Sample equation: (20 + 5*t^2)")
     while True:
         try:
-            equation = input("      Enter the equation (20 + 5*t^2): ")
+            equation = input("         Enter the equation : ")
             equation = equation.replace("^", "**")
-            expression = sympy.sympify(equation)
-            break
+            equation = sympy.sympify(equation)
+            if equation.free_symbols == {t}:
+                break
+            else:
+                clear(1)
         except TypeError:
             clear(1)
-            continue
         except sympy.SympifyError:
             clear(1)
-            continue
 
-    time = float_input("      Enter the time(s)              : ")
+    time = float_input("         At what time(s)?   : ")
 
     print("")
     print(("-" * 68).center(columns))
     print("ANSWER\n".center(columns))
-    print(f"         Instantaneous Velocity: {instantaneous_velocity(expression, time)}m/s")
+    print(f"         Instantaneous Velocity: {instantaneous_velocity(equation, time)}m/s")
 
 
 def Average_InstantaneousAcceleration():
     print("test")
 
 
-def ConstantAcceleration():
-    print("      Enter all the given (leave it blank if not given, or "'"?"'" if unknown): ")
-    print("      NOTE: For unknown Displacement just put "'"0"'" in initial position and \n"
-          "            "'"?"'" in final position.")
-    print("")
-
-    for var, symbol in zip(["Initial position(m)", "Final position(m)", "Initial velocity(m/s)", "Final velocity(m/s)",
-                            "Acceleration(m/s²)", "Time(s)"], [p_i, p_f, v_i, v_f, a, t]):
-        while True:
-            user_input = input(f"         {var:<22}: ")
-            try:
-                if user_input:
-                    if user_input == "?":
-                        if len(Kinematic.Unknown) != 2:
-                            Kinematic.Unknown.append(symbol)
-                            Kinematic.Answer[symbol] = ""
-                            break
-                        else:
-                            clear(1)
-                            continue
-                    Kinematic.Given[symbol] = float(user_input)
-                    break
-                else:
-                    Kinematic.Not_Given.append(symbol)
-                    break
-            except ValueError:
-                clear(1)
-
-    direction_v_i = None
-    direction_v_f = None
-    print("")
-    if v_i in Kinematic.Unknown:
-        while True:
-            direction_v_i = input("         Enter direction(left/right) of initial velocity: ")
-            if direction_v_i == "+" or direction_v_i == "-":
-                break
-            else:
-                clear(1)
-
-    if v_f in Kinematic.Unknown:
-        while True:
-            direction_v_f = input("         Enter direction(left/right) of final velocity: ")
-            if direction_v_f == "+" or direction_v_f == "-":
-                break
-            else:
-                clear(1)
-
+def ConstantAcceleration_FreeFall_Calculation(_usage):
     _p_i, _p_f, _v_i, _v_f, _a, _t = None, None, None, None, None, None
+    if _usage == "ConstantAcceleration":
+        print("      Enter all the given (leave it blank if not given, or "'"?"'" if unknown): ")
+        print("      NOTE: For unknown Displacement just put "'"0"'" in initial position and \n"
+              "            "'"?"'" in final position.")
+        print("")
+    elif _usage == "FreeFall":
+        _a = -9.8
+        print("      Enter all the given (leave it blank if not given, or "'"?"'" if unknown): ")
+        print("      NOTE: Ideal conditions without air resistance.\n"
+              "            For unknown Displacement just put "'"0"'" in initial position and \n"
+              "            "'"?"'" in final position.")
+        print("")
 
-    for var, val in Kinematic.Given.items():
-        if var == p_i:
-            _p_i = val
-        elif var == p_f:
-            _p_f = val
-        elif var == v_i:
-            _v_i = val
-        elif var == v_f:
-            _v_f = val
-        elif var == a:
-            _a = val
-        elif var == t:
-            _t = val
-
-    check_solution = [x for x in Kinematic.Unknown]
-    while len(Kinematic.Unknown) > 0:
-        if not check_solution:
-            break
-
-        for var in Kinematic.Unknown:
-            if var == t:
-                answer = None
-                try:
-                    if all(x in Kinematic.Given for x in [v_i, v_f, a]):
-                        equation = Kinematic.Equation[1]
-                        answer = sympy.solve(equation.subs({v_i: _v_i, v_f: _v_f, a: _a}), t)[0]
-                    elif all(x in Kinematic.Given for x in [v_i, a, p_i, p_f]):
-                        equation = Kinematic.Equation[2]
-                        answer = sympy.solve(equation.subs({v_i: _v_i, a: _a, p_i: _p_i, p_f: _p_f}), t)
-                        answer = max((float(x) for x in answer if float(x) > 0), default=None)
-                    elif all(x in Kinematic.Given for x in [v_i, v_f, p_i, p_f]):
-                        equation = Kinematic.Equation[4]
-                        answer = sympy.solve(equation.subs({v_i: _v_i, v_f: _v_f, p_i: _p_i, p_f: _p_f}), t)[0]
-
-                    answer = round(float(answer), 2)
-                    Kinematic.Given[t] = answer
-                    Kinematic.Answer[t] = answer
-                    _t = answer
-                    Kinematic.Unknown.remove(t)
-                except TypeError:
-                    check_solution.remove(p_i)
-                    pass
-
-            elif var == a:
-                answer = None
-                try:
-                    if all(x in Kinematic.Given for x in [v_i, v_f, t]):
-                        equation = Kinematic.Equation[1]
-                        answer = sympy.solve(equation.subs({v_i: _v_i, v_f: _v_f, t: _t}), a)[0]
-                    elif all(x in Kinematic.Given for x in [p_i, p_f, v_i, t]):
-                        equation = Kinematic.Equation[2]
-                        answer = sympy.solve(equation.subs({p_i: _p_i, p_f: _p_f, v_i: _v_i, t: _t}), a)[0]
-                    elif all(x in Kinematic.Given for x in [v_i, v_f, p_i, p_f]):
-                        equation = Kinematic.Equation[3]
-                        answer = sympy.solve(equation.subs({v_i: _v_i, v_f: _v_f, p_i: _p_i, p_f: _p_f}), a)[0]
-
-                    answer = round(float(answer), 2)
-                    Kinematic.Given[a] = answer
-                    Kinematic.Answer[a] = answer
-                    _a = answer
-                    Kinematic.Unknown.remove(a)
-                except TypeError:
-                    check_solution.remove(a)
-                    pass
-
-            elif var == v_f:
-                answer = None
-                try:
-                    if all(x in Kinematic.Given for x in [v_i, a, t]):
-                        equation = Kinematic.Equation[1]
-                        answer = sympy.solve(equation.subs({v_i: _v_i, a: _a, t: _t}), v_f)[0]
-                    elif all(x in Kinematic.Given for x in [v_i, a, p_i, p_f]):
-                        equation = Kinematic.Equation[3]
-                        answer = sympy.solve(equation.subs({v_i: _v_i, a: _a, p_i: _p_i, p_f: _p_f}), v_f)[0]
-                    elif all(x in Kinematic.Given for x in [p_i, p_f, v_i, t]):
-                        equation = Kinematic.Equation[4]
-                        answer = sympy.solve(equation.subs({p_i: _p_i, p_f: _p_f, v_i: _v_i, t: _t}), v_f)[0]
-
-                    if direction_v_f == "-":
-                        answer = -abs(answer)
-                    else:
-                        answer = abs(answer)
-
-                    answer = round(float(answer), 2)
-                    Kinematic.Given[v_f] = answer
-                    Kinematic.Answer[v_f] = answer
-                    _v_f = answer
-                    Kinematic.Unknown.remove(v_f)
-                except TypeError:
-                    check_solution.remove(v_f)
-                    pass
-
-            elif var == v_i:
-                answer = None
-                try:
-                    if all(x in Kinematic.Given for x in [v_f, a, t]):
-                        equation = Kinematic.Equation[1]
-                        answer = sympy.solve(equation.subs({v_f: _v_f, a: _a, t: _t}), v_i)[0]
-                    elif all(x in Kinematic.Given for x in [p_i, p_f, a, t]):
-                        equation = Kinematic.Equation[2]
-                        answer = sympy.solve(equation.subs({p_i: _p_i, p_f: _p_f, a: _a, t: _t}), v_i)[0]
-                    elif all(x in Kinematic.Given for x in [p_i, p_f, v_f, a]):
-                        equation = Kinematic.Equation[3]
-                        answer = sympy.solve(equation.subs({p_i: _p_i, p_f: _p_f, v_f: _v_f, a: _a}), v_i)[0]
-                    elif all(x in Kinematic.Given for x in [v_f, p_i, p_f, t]):
-                        equation = Kinematic.Equation[4]
-                        answer = sympy.solve(equation.subs({v_f: _v_f, p_i: _p_i, p_f: _p_f, t: _t}), v_i)[0]
-
-                    if direction_v_i == "+":
-                        answer = abs(answer)
-                    else:
-                        answer = -abs(answer)
-
-                    answer = round(float(answer), 2)
-                    Kinematic.Given[v_i] = answer
-                    Kinematic.Answer[v_i] = answer
-                    _v_i = answer
-                    Kinematic.Unknown.remove(v_i)
-                except TypeError:
-                    check_solution.remove(v_i)
-                    pass
-
-            elif var == p_f:
-                answer = None
-                try:
-                    if all(x in Kinematic.Given for x in [p_i, v_i, a, t]):
-                        equation = Kinematic.Equation[2]
-                        answer = sympy.solve(equation.subs({p_i: _p_i, v_i: _v_i, a: _a, t: _t}), p_f)[0]
-                    elif all(x in Kinematic.Given for x in [v_f, v_i, a, p_i]):
-                        equation = Kinematic.Equation[3]
-                        answer = sympy.solve(equation.subs({v_f: _v_f, v_i: _v_i, a: _a, p_i: _p_i}), p_f)[0]
-                    elif all(x in Kinematic.Given for x in [p_i, v_i, v_f, t]):
-                        equation = Kinematic.Equation[4]
-                        answer = sympy.solve(equation.subs({p_i: _p_i, v_i: _v_i, v_f: _v_f, t: _t}), p_f)[0]
-
-                    answer = round(float(answer), 2)
-                    Kinematic.Given[p_f] = answer
-                    Kinematic.Answer[p_f] = answer
-                    _p_f = answer
-                    Kinematic.Unknown.remove(p_f)
-                except TypeError:
-                    check_solution.remove(p_f)
-                    pass
-
-            elif var == p_i:
-                answer = None
-                try:
-                    if all(x in Kinematic.Given for x in [p_f, v_i, v_f, t]):
-                        equation = Kinematic.Equation[4]
-                        answer = sympy.solve(equation.subs({p_f: _p_f, v_i: _v_i, v_f: _v_f, t: _t}), p_i)[0]
-
-                    elif all(x in Kinematic.Given for x in [v_f, v_i, a, p_f]):
-                        equation = Kinematic.Equation[3]
-                        answer = sympy.solve(equation.subs({v_f: _v_f, v_i: _v_i, a: _a, p_f: _p_f}), p_i)[0]
-
-                    elif all(x in Kinematic.Given for x in [p_f, v_i, a, t]):
-                        equation = Kinematic.Equation[2]
-                        answer = sympy.solve(equation.subs({p_f: _p_f, v_i: _v_i, a: _a, t: _t}), p_i)[0]
-
-                    answer = round(float(answer), 2)
-                    Kinematic.Given[p_i] = answer
-                    Kinematic.Answer[p_i] = answer
-                    _p_i = answer
-                    Kinematic.Unknown.remove(p_i)
-                except TypeError:
-                    check_solution.remove(p_i)
-                    pass
-
-    print("")
-    print(("-" * 68).center(columns))
-    print("ANSWER\n".center(columns))
-
-    if not Kinematic.Unknown and Kinematic.Given and Kinematic.Answer:
-        if Kinematic.Answer:
-            for var in Kinematic.Answer.keys():
-                if var == p_i:
-                    print(f"         Initial position : {Kinematic.Answer[var]}m")
-                elif var == p_f:
-                    print(f"         Final position   : {Kinematic.Answer[var]}m")
-                elif var == v_i:
-                    print(f"         Initial velocity : {Kinematic.Answer[var]}m/s")
-                elif var == v_f:
-                    print(f"         Final velocity   : {Kinematic.Answer[var]}m/s")
-                elif var == a:
-                    print(f"         Acceleration     : {Kinematic.Answer[var]}m/s²")
-                elif var == t:
-                    print(f"         Time             : {Kinematic.Answer[var]}s")
-
-    elif Kinematic.Unknown and Kinematic.Given:
-        for var in Kinematic.Answer.keys():
-            if var == p_i:
-                print(f"         Initial position : Not enough information to solve")
-            elif var == p_f:
-                print(f"         Final position   : Not enough information to solve")
-            elif var == v_i:
-                print(f"         Initial velocity : Not enough information to solve")
-            elif var == v_f:
-                print(f"         Final velocity   : Not enough information to solves")
-            elif var == a:
-                print(f"         Acceleration     : Not enough information to solve")
-            elif var == t:
-                print(f"         Time             : Not enough information to solve")
-
-    elif not Kinematic.Unknown and Kinematic.Given:
-        print("       No unknown variable to solve")
-
-    elif not Kinematic.Unknown and not Kinematic.Given:
-        print("       No unknown variable to solve")
-
-    Kinematic.Given.clear()
-    Kinematic.Not_Given.clear()
-    Kinematic.Unknown.clear()
-    Kinematic.Answer.clear()
-
-
-def FreeFall():
-    print("      Enter all the given (leave it blank if not given, or "'"?"'" if unknown): ")
-    print("      NOTE: Ideal conditions without air resistance.\n"
-          "            For unknown Displacement just put "'"0"'" in initial position and \n"
-          "            "'"?"'" in final position.")
-    print("")
     while True:
-        direction = input("         Enter the direction(upward/downward): ")
-        if direction == "upward" or direction == "downward":
-            break
-        else:
-            clear(1)
+        if _usage == "ConstantAcceleration":
+            direction = input("         Enter the direction(left/right): ")
+            if direction == "left" or direction == "right":
+                break
+            else:
+                clear(1)
+
+        elif _usage == "FreeFall":
+
+            direction = input("         Enter the direction(upward/downward): ")
+            if direction == "upward" or direction == "downward":
+                break
+            else:
+                clear(1)
 
     print("")
-    for var, symbol in zip(["Initial position(m)", "Final position(m)", "Initial velocity(m/s)", "Final velocity(m/s)",
-                            "Time(s)"], [p_i, p_f, v_i, v_f, t]):
+    var_symbol = None
+    if _usage == "ConstantAcceleration":
+        var_symbol = zip(["Initial position(m)", "Final position(m)", "Initial velocity(m/s)", "Final velocity(m/s)",
+                          "Acceleration(m/s²)", "Time(s)"], [p_i, p_f, v_i, v_f, a, t])
+    elif _usage == "FreeFall":
+        var_symbol = zip(["Initial position(m)", "Final position(m)", "Initial velocity(m/s)", "Final velocity(m/s)",
+                          "Time(s)"], [p_i, p_f, v_i, v_f, t])
+
+    for var, symbol in var_symbol:
         while True:
             user_input = input(f"         {var:<22}: ")
             try:
@@ -564,7 +354,7 @@ def FreeFall():
                             clear(1)
                             continue
                     else:
-                        if direction == "downward":
+                        if direction == "left" or direction == "downward":
                             if symbol == p_f:
                                 if p_i in Kinematic.Given:
                                     if float(user_input) < Kinematic.Given[p_i]:
@@ -635,9 +425,6 @@ def FreeFall():
             except ValueError:
                 clear(1)
 
-    _a = -9.8  # Gravitational constant acceleration
-    _p_i, _p_f, _v_i, _v_f, _t = None, None, None, None, None
-
     for var, val in Kinematic.Given.items():
         if var == p_i:
             _p_i = val
@@ -647,32 +434,56 @@ def FreeFall():
             _v_i = val
         elif var == v_f:
             _v_f = val
+        elif var == a:
+            _a = val
         elif var == t:
             _t = val
 
     check_count = 8
     checking_variable = [x for x in Kinematic.Unknown]
+
     while len(Kinematic.Unknown) > 0:
         if check_count == 1:
             break
-
         var = checking_variable.pop(0)
+
         if var == t:
             answer = None
             try:
-                if all(x in Kinematic.Given for x in [v_i, v_f]):
-                    equation = Kinematic.Equation[1]
-                    answer = sympy.solve(equation.subs({v_i: _v_i, v_f: _v_f, a: _a}), t)[0]
-                elif all(x in Kinematic.Given for x in [v_i, p_i, p_f]):
-                    equation = Kinematic.Equation[2]
-                    answer = sympy.solve(equation.subs({v_i: _v_i, a: _a, p_i: _p_i, p_f: _p_f}), t)
-                    answer = (float(x) for x in answer if float(x) > 0)
-                    answer = max(answer, default=None)
-                elif all(x in Kinematic.Given for x in [v_i, v_f, p_i, p_f]):
-                    equation = Kinematic.Equation[4]
-                    answer = sympy.solve(equation.subs({v_i: _v_i, v_f: _v_f, p_i: _p_i, p_f: _p_f}), t)[0]
+                if _usage == "ConstantAcceleration":
+                    if all(x in Kinematic.Given for x in [v_i, v_f, a]):
+                        equation = Kinematic.Equation[1]
+                        answer = sympy.solve(equation.subs({v_i: _v_i, v_f: _v_f, a: _a}), t)
+                    elif all(x in Kinematic.Given for x in [v_i, a, p_i, p_f]):
+                        equation = Kinematic.Equation[2]
+                        answer = sympy.solve(equation.subs({v_i: _v_i, a: _a, p_i: _p_i, p_f: _p_f}), t)
+                    elif all(x in Kinematic.Given for x in [v_i, v_f, p_i, p_f]):
+                        equation = Kinematic.Equation[4]
+                        answer = sympy.solve(equation.subs({v_i: _v_i, v_f: _v_f, p_i: _p_i, p_f: _p_f}), t)
 
-                answer = round(float(answer), 2)
+                elif _usage == "FreeFall":
+                    if all(x in Kinematic.Given for x in [v_i, v_f]):
+                        equation = Kinematic.Equation[1]
+                        answer = sympy.solve(equation.subs({v_i: _v_i, v_f: _v_f, a: _a}), t)
+                    elif all(x in Kinematic.Given for x in [v_i, p_i, p_f]):
+                        equation = Kinematic.Equation[2]
+                        answer = sympy.solve(equation.subs({v_i: _v_i, a: _a, p_i: _p_i, p_f: _p_f}), t)
+                    elif all(x in Kinematic.Given for x in [v_i, v_f, p_i, p_f]):
+                        equation = Kinematic.Equation[4]
+                        answer = sympy.solve(equation.subs({v_i: _v_i, v_f: _v_f, p_i: _p_i, p_f: _p_f}), t)
+
+                if len(answer) > 1:
+                    for ans in answer:
+                        if ans.is_real:
+                            if ans > 0:
+                                answer = round(float(ans), 2)
+                        else:
+                            real = sympy.im(ans)
+                            if real > 0:
+                                answer = round(float(real), 2)
+                else:
+                    answer = round(float(answer[0]), 2)
+
                 Kinematic.Given[t] = answer
                 Kinematic.Answer[t] = answer
                 _t = answer
@@ -681,18 +492,52 @@ def FreeFall():
                 checking_variable.append(var)
                 pass
 
+        elif var == a:
+            answer = None
+            try:
+                if all(x in Kinematic.Given for x in [v_i, v_f, t]):
+                    equation = Kinematic.Equation[1]
+                    answer = sympy.solve(equation.subs({v_i: _v_i, v_f: _v_f, t: _t}), a)[0]
+                elif all(x in Kinematic.Given for x in [p_i, p_f, v_i, t]):
+                    equation = Kinematic.Equation[2]
+                    answer = sympy.solve(equation.subs({p_i: _p_i, p_f: _p_f, v_i: _v_i, t: _t}), a)[0]
+                elif all(x in Kinematic.Given for x in [v_i, v_f, p_i, p_f]):
+                    equation = Kinematic.Equation[3]
+                    answer = sympy.solve(equation.subs({v_i: _v_i, v_f: _v_f, p_i: _p_i, p_f: _p_f}), a)[0]
+
+                answer = round(float(answer), 2)
+                Kinematic.Given[a] = answer
+                Kinematic.Answer[a] = answer
+                _a = answer
+                Kinematic.Unknown.remove(a)
+            except TypeError:
+                checking_variable.append(var)
+                pass
+
         elif var == v_f:
             answer = None
             try:
-                if all(x in Kinematic.Given for x in [v_i, t]):
-                    equation = Kinematic.Equation[1]
-                    answer = sympy.solve(equation.subs({v_i: _v_i, a: _a, t: _t}), v_f)[0]
-                elif all(x in Kinematic.Given for x in [v_i, p_i, p_f]):
-                    equation = Kinematic.Equation[3]
-                    answer = sympy.solve(equation.subs({v_i: _v_i, a: _a, p_i: _p_i, p_f: _p_f}), v_f)[0]
-                elif all(x in Kinematic.Given for x in [p_i, p_f, v_i, t]):
-                    equation = Kinematic.Equation[4]
-                    answer = sympy.solve(equation.subs({p_i: _p_i, p_f: _p_f, v_i: _v_i, t: _t}), v_f)[0]
+                if _usage == "ConstantAcceleration":
+                    if all(x in Kinematic.Given for x in [v_i, a, t]):
+                        equation = Kinematic.Equation[1]
+                        answer = sympy.solve(equation.subs({v_i: _v_i, a: _a, t: _t}), v_f)[0]
+                    elif all(x in Kinematic.Given for x in [v_i, a, p_i, p_f]):
+                        equation = Kinematic.Equation[3]
+                        answer = sympy.solve(equation.subs({v_i: _v_i, a: _a, p_i: _p_i, p_f: _p_f}), v_f)[0]
+                    elif all(x in Kinematic.Given for x in [p_i, p_f, v_i, t]):
+                        equation = Kinematic.Equation[4]
+                        answer = sympy.solve(equation.subs({p_i: _p_i, p_f: _p_f, v_i: _v_i, t: _t}), v_f)[0]
+
+                elif _usage == "FreeFall":
+                    if all(x in Kinematic.Given for x in [v_i, t]):
+                        equation = Kinematic.Equation[1]
+                        answer = sympy.solve(equation.subs({v_i: _v_i, a: _a, t: _t}), v_f)[0]
+                    elif all(x in Kinematic.Given for x in [v_i, p_i, p_f]):
+                        equation = Kinematic.Equation[3]
+                        answer = sympy.solve(equation.subs({v_i: _v_i, a: _a, p_i: _p_i, p_f: _p_f}), v_f)[0]
+                    elif all(x in Kinematic.Given for x in [p_i, p_f, v_i, t]):
+                        equation = Kinematic.Equation[4]
+                        answer = sympy.solve(equation.subs({p_i: _p_i, p_f: _p_f, v_i: _v_i, t: _t}), v_f)[0]
 
                 answer = round(float(answer), 2)
                 Kinematic.Given[v_f] = answer
@@ -706,18 +551,33 @@ def FreeFall():
         elif var == v_i:
             answer = None
             try:
-                if all(x in Kinematic.Given for x in [v_f, t]):
-                    equation = Kinematic.Equation[1]
-                    answer = sympy.solve(equation.subs({v_f: _v_f, a: _a, t: _t}), v_i)[0]
-                elif all(x in Kinematic.Given for x in [p_i, p_f, t]):
-                    equation = Kinematic.Equation[2]
-                    answer = sympy.solve(equation.subs({p_i: _p_i, p_f: _p_f, a: _a, t: _t}), v_i)[0]
-                elif all(x in Kinematic.Given for x in [p_i, p_f, v_f]):
-                    equation = Kinematic.Equation[3]
-                    answer = sympy.solve(equation.subs({p_i: _p_i, p_f: _p_f, v_f: _v_f, a: _a}), v_i)[0]
-                elif all(x in Kinematic.Given for x in [v_f, p_i, p_f, t]):
-                    equation = Kinematic.Equation[4]
-                    answer = sympy.solve(equation.subs({v_f: _v_f, p_i: _p_i, p_f: _p_f, t: _t}), v_i)[0]
+                if _usage == "ConstantAcceleration":
+                    if all(x in Kinematic.Given for x in [v_f, a, t]):
+                        equation = Kinematic.Equation[1]
+                        answer = sympy.solve(equation.subs({v_f: _v_f, a: _a, t: _t}), v_i)[0]
+                    elif all(x in Kinematic.Given for x in [p_i, p_f, a, t]):
+                        equation = Kinematic.Equation[2]
+                        answer = sympy.solve(equation.subs({p_i: _p_i, p_f: _p_f, a: _a, t: _t}), v_i)[0]
+                    elif all(x in Kinematic.Given for x in [p_i, p_f, v_f, a]):
+                        equation = Kinematic.Equation[3]
+                        answer = sympy.solve(equation.subs({p_i: _p_i, p_f: _p_f, v_f: _v_f, a: _a}), v_i)[0]
+                    elif all(x in Kinematic.Given for x in [v_f, p_i, p_f, t]):
+                        equation = Kinematic.Equation[4]
+                        answer = sympy.solve(equation.subs({v_f: _v_f, p_i: _p_i, p_f: _p_f, t: _t}), v_i)[0]
+
+                elif _usage == "FreeFall":
+                    if all(x in Kinematic.Given for x in [v_f, t]):
+                        equation = Kinematic.Equation[1]
+                        answer = sympy.solve(equation.subs({v_f: _v_f, a: _a, t: _t}), v_i)[0]
+                    elif all(x in Kinematic.Given for x in [p_i, p_f, t]):
+                        equation = Kinematic.Equation[2]
+                        answer = sympy.solve(equation.subs({p_i: _p_i, p_f: _p_f, a: _a, t: _t}), v_i)[0]
+                    elif all(x in Kinematic.Given for x in [p_i, p_f, v_f]):
+                        equation = Kinematic.Equation[3]
+                        answer = sympy.solve(equation.subs({p_i: _p_i, p_f: _p_f, v_f: _v_f, a: _a}), v_i)[0]
+                    elif all(x in Kinematic.Given for x in [v_f, p_i, p_f, t]):
+                        equation = Kinematic.Equation[4]
+                        answer = sympy.solve(equation.subs({v_f: _v_f, p_i: _p_i, p_f: _p_f, t: _t}), v_i)[0]
 
                 answer = round(float(answer), 2)
                 Kinematic.Given[v_i] = answer
@@ -731,15 +591,27 @@ def FreeFall():
         elif var == p_f:
             answer = None
             try:
-                if all(x in Kinematic.Given for x in [p_i, v_i, t]):
-                    equation = Kinematic.Equation[2]
-                    answer = sympy.solve(equation.subs({p_i: _p_i, v_i: _v_i, a: _a, t: _t}), p_f)[0]
-                elif all(x in Kinematic.Given for x in [v_f, v_i, p_i]):
-                    equation = Kinematic.Equation[3]
-                    answer = sympy.solve(equation.subs({v_f: _v_f, v_i: _v_i, a: _a, p_i: _p_i}), p_f)[0]
-                elif all(x in Kinematic.Given for x in [p_i, v_i, v_f, t]):
-                    equation = Kinematic.Equation[4]
-                    answer = sympy.solve(equation.subs({p_i: _p_i, v_i: _v_i, v_f: _v_f, t: _t}), p_f)[0]
+                if _usage == "ConstantAcceleration":
+                    if all(x in Kinematic.Given for x in [p_i, v_i, a, t]):
+                        equation = Kinematic.Equation[2]
+                        answer = sympy.solve(equation.subs({p_i: _p_i, v_i: _v_i, a: _a, t: _t}), p_f)[0]
+                    elif all(x in Kinematic.Given for x in [v_f, v_i, a, p_i]):
+                        equation = Kinematic.Equation[3]
+                        answer = sympy.solve(equation.subs({v_f: _v_f, v_i: _v_i, a: _a, p_i: _p_i}), p_f)[0]
+                    elif all(x in Kinematic.Given for x in [p_i, v_i, v_f, t]):
+                        equation = Kinematic.Equation[4]
+                        answer = sympy.solve(equation.subs({p_i: _p_i, v_i: _v_i, v_f: _v_f, t: _t}), p_f)[0]
+
+                elif _usage == "FreeFall":
+                    if all(x in Kinematic.Given for x in [p_i, v_i, t]):
+                        equation = Kinematic.Equation[2]
+                        answer = sympy.solve(equation.subs({p_i: _p_i, v_i: _v_i, a: _a, t: _t}), p_f)[0]
+                    elif all(x in Kinematic.Given for x in [v_f, v_i, p_i]):
+                        equation = Kinematic.Equation[3]
+                        answer = sympy.solve(equation.subs({v_f: _v_f, v_i: _v_i, a: _a, p_i: _p_i}), p_f)[0]
+                    elif all(x in Kinematic.Given for x in [p_i, v_i, v_f, t]):
+                        equation = Kinematic.Equation[4]
+                        answer = sympy.solve(equation.subs({p_i: _p_i, v_i: _v_i, v_f: _v_f, t: _t}), p_f)[0]
 
                 answer = round(float(answer), 2)
                 Kinematic.Given[p_f] = answer
@@ -753,17 +625,27 @@ def FreeFall():
         elif var == p_i:
             answer = None
             try:
-                if all(x in Kinematic.Given for x in [p_f, v_i, v_f, t]):
-                    equation = Kinematic.Equation[4]
-                    answer = sympy.solve(equation.subs({p_f: _p_f, v_i: _v_i, v_f: _v_f, t: _t}), p_i)[0]
+                if _usage == "ConstantAcceleration":
+                    if all(x in Kinematic.Given for x in [p_f, v_i, v_f, t]):
+                        equation = Kinematic.Equation[4]
+                        answer = sympy.solve(equation.subs({p_f: _p_f, v_i: _v_i, v_f: _v_f, t: _t}), p_i)[0]
+                    elif all(x in Kinematic.Given for x in [v_f, v_i, a, p_f]):
+                        equation = Kinematic.Equation[3]
+                        answer = sympy.solve(equation.subs({v_f: _v_f, v_i: _v_i, a: _a, p_f: _p_f}), p_i)[0]
+                    elif all(x in Kinematic.Given for x in [p_f, v_i, a, t]):
+                        equation = Kinematic.Equation[2]
+                        answer = sympy.solve(equation.subs({p_f: _p_f, v_i: _v_i, a: _a, t: _t}), p_i)[0]
 
-                elif all(x in Kinematic.Given for x in [v_f, v_i, p_f]):
-                    equation = Kinematic.Equation[3]
-                    answer = sympy.solve(equation.subs({v_f: _v_f, v_i: _v_i, a: _a, p_f: _p_f}), p_i)[0]
-
-                elif all(x in Kinematic.Given for x in [p_f, v_i, t]):
-                    equation = Kinematic.Equation[2]
-                    answer = sympy.solve(equation.subs({p_f: _p_f, v_i: _v_i, a: _a, t: _t}), p_i)[0]
+                elif _usage == "FreeFall":
+                    if all(x in Kinematic.Given for x in [p_f, v_i, v_f, t]):
+                        equation = Kinematic.Equation[4]
+                        answer = sympy.solve(equation.subs({p_f: _p_f, v_i: _v_i, v_f: _v_f, t: _t}), p_i)[0]
+                    elif all(x in Kinematic.Given for x in [v_f, v_i, p_f]):
+                        equation = Kinematic.Equation[3]
+                        answer = sympy.solve(equation.subs({v_f: _v_f, v_i: _v_i, a: _a, p_f: _p_f}), p_i)[0]
+                    elif all(x in Kinematic.Given for x in [p_f, v_i, t]):
+                        equation = Kinematic.Equation[2]
+                        answer = sympy.solve(equation.subs({p_f: _p_f, v_i: _v_i, a: _a, t: _t}), p_i)[0]
 
                 answer = round(float(answer), 2)
                 Kinematic.Given[p_i] = answer
@@ -791,27 +673,36 @@ def FreeFall():
                     print(f"         Initial velocity : {Kinematic.Answer[var]}m/s")
                 elif var == v_f:
                     print(f"         Final velocity   : {Kinematic.Answer[var]}m/s")
+                elif var == a:
+                    print(f"         Acceleration     : {Kinematic.Answer[var]}m/s²")
                 elif var == t:
                     print(f"         Time             : {Kinematic.Answer[var]}s")
 
     elif Kinematic.Unknown and Kinematic.Given:
         for var in Kinematic.Answer.keys():
             if var == p_i:
-                print(f"         Initial position     : Not enough information to solve")
+                print(f"         Initial position : Not enough information to solve")
             elif var == p_f:
-                print(f"         Final position       : Not enough information to solve")
+                print(f"         Final position   : Not enough information to solve")
             elif var == v_i:
-                print(f"         Initial velocity     : Not enough information to solve")
+                print(f"         Initial velocity : Not enough information to solve")
             elif var == v_f:
-                print(f"         Final velocity       : Not enough information to solves")
+                print(f"         Final velocity   : Not enough information to solves")
+            elif var == a:
+                print(f"         Acceleration     : Not enough information to solve")
             elif var == t:
-                print(f"         Time                 : Not enough information to solve")
+                print(f"         Time             : Not enough information to solve")
 
     elif not Kinematic.Unknown and Kinematic.Given:
-        print("         No unknown variable to solve")
+        print("       No unknown variable to solve")
 
     elif not Kinematic.Unknown and not Kinematic.Given:
-        print("         No unknown variable to solve")
+        print("       No unknown variable to solve")
+
+    if t in Kinematic.Answer.keys():
+        if Kinematic.Answer[t] < 0:
+            print("")
+            print("      NOTE: The time is negative; there is something wrong with the given.")
 
     Kinematic.Given.clear()
     Kinematic.Not_Given.clear()
@@ -916,15 +807,15 @@ def FindingVelocity_Displacement_from_Acceleration():
     print("")
     print(("-" * 68).center(columns))
     print("ANSWER\n".center(columns))
-    print(f"         Velocity function      : {str(formatted_velocity_function).replace("**", "^")}")
-    print(f"         Displacement function  : {str(formatted_displacement_function).replace("**", "^")}")
+    print(f"         Velocity function           : {str(formatted_velocity_function).replace("**", "^")}")
+    print(f"         Displacement function       : {str(formatted_displacement_function).replace("**", "^")}")
 
     if select == "1":
         _velocity = round(float(sympy.solve(velocity_function.subs({t: at_v_time}), v)[0]), 2)
         _displacement = round(float(sympy.solve(displacement_function.subs({t: at_p_time}), x)[0]), 2)
 
-        print(f"         Velocity at {f"{at_v_time}"+"s":<11}: {_velocity}m/s")
-        print(f"         displacement at {f"{at_p_time}"+"s":<7}: {_displacement}m")
+        print(f"         Velocity at {f"{at_v_time}"+"s":<16}: {_velocity}m/s")
+        print(f"         displacement at {f"{at_p_time}"+"s":<12}: {_displacement}m")
     elif select == "2":
         v_time = sympy.solve(velocity_function.subs({v: max_velocity}), t)
         d_time = sympy.solve(displacement_function.subs({x: max_position}), t)
@@ -936,8 +827,8 @@ def FindingVelocity_Displacement_from_Acceleration():
         if not p_total_time:
             p_total_time = ", ".join(f"{x}s" for x in [round(float(time.as_real_imag()[0]), 2) for time in d_time])
 
-        print(f"         Time at max velocity is    : {v_total_time}")
-        print(f"         Time at max displacement is: {p_total_time}")
+        print(f"         Time at max velocity is     : {v_total_time}")
+        print(f"         Time at max displacement is : {p_total_time}")
 
 
 if __name__ == "__main__":
