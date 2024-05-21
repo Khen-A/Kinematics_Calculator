@@ -25,6 +25,8 @@ p_i, p_f, v_i, v_f, a, t = sympy.symbols('p_i p_f v_i v_f a t')
 in_solving = False
 _topic = False
 selected = None
+ai_a_select = None
+fvda_select = None
 
 
 class Kinematic:
@@ -187,14 +189,14 @@ def main():
     global _topic
     global selected
 
-    # Title
-    print("╔" + "═" * 78 + "╗")
-    print(f"║{"KINEMATICS CALCULATOR":^78}║")
-    print("╚" + "═" * 78 + "╝")
-
     if not in_solving:
+        # Title
+        print("╔" + "═" * 78 + "╗")
+        print(f"║{"KINEMATICS CALCULATOR":^78}║")
+        print("╚" + "═" * 78 + "╝")
+
         # Option
-        print("      TOPICS:")
+        print("      OPTIONS:")
         for key, topic in topics.items():
             print(f"         [{key}] {topic}")
 
@@ -202,15 +204,17 @@ def main():
 
         selection = None
         while not selection:
-            selected = int_input("      Select a topic: ")
+            selected = int_input("      Select an option: ")
             if selected in range(1, 7):
-                clear(10)
+                clear(13)
                 for key, topic in topics.items():
                     if key == selected:
-                        print(topic.upper().center(columns))
+                        print("╔" + "═" * 78 + "╗")
+                        print(f"║{topic.upper():^78}║")
+                        print("╚" + "═" * 78 + "╝")
+
                         _topic = (topic.replace(" from ", "_from_").replace(", and ", "_").replace(", ", "_")
                                   .replace(" ", "").replace("and", "_"))
-                        print("")
 
                         if _topic == "ConstantAcceleration" or _topic == "FreeFall":
                             ConstantAcceleration_FreeFall_Calculation(_topic)
@@ -227,8 +231,10 @@ def main():
     else:
         for key, topic in topics.items():
             if key == selected:
-                print(topic.upper().center(columns))
-                print("")
+                print("╔" + "═" * 78 + "╗")
+                print(f"║{topic.upper():^78}║")
+                print("╚" + "═" * 78 + "╝")
+
                 if _topic == "ConstantAcceleration" or _topic == "FreeFall":
                     ConstantAcceleration_FreeFall_Calculation(_topic)
                 else:
@@ -296,7 +302,68 @@ def InstantaneousVelocity():
 
 
 def Average_InstantaneousAcceleration():
-    print("test")
+    global ai_a_select
+    if not in_solving:
+        print("      Select an option you want to solve:")
+        print("         [1] Average Acceleration")
+        print("         [2] Instantaneous Acceleration")
+        print("")
+
+    while True:
+        if not in_solving:
+            ai_a_select = input("      Select: ")
+            clear(5)
+
+        if ai_a_select == "1":
+            print("Solve for Average Acceleration".center(columns))
+            print("")
+
+            initial_velocity = float_input("         Initial velocity(m) : ")
+            final_velocity = float_input("         Final velocity(m)   : ")
+            initial_time = float_input("         Initial time(s)     : ")
+            final_time = float_input("         Final time(s)       : ")
+
+            _displacement = final_velocity - initial_velocity
+            _time = final_time - initial_time
+            average_velocity = ave_velocity(_displacement, _time)
+
+            print("")
+            print(("-" * 68).center(columns))
+            print("ANSWER\n".center(columns))
+            print(f"         Average Acceleration: {average_velocity}m/s")
+            break
+        elif ai_a_select == "2":
+            print("Solve for Instantaneous Acceleration".center(columns))
+            print("")
+
+            while True:
+                try:
+                    print("         Sample equation: (3 * t^2 + 2 * t)")
+                    equation = input("         Enter the acceleration equation: ")
+                    equation = equation.replace("^", "**")
+                    equation = sympy.sympify(equation)
+
+                    if equation.free_symbols == {t}:
+                        break
+                    else:
+                        clear(2)
+                except TypeError:
+                    clear(2)
+                except sympy.SympifyError:
+                    clear(2)
+
+            _time = float_input("         At what time(s)?               : ")
+
+            differentiate = sympy.diff(equation, t)
+            instantaneous_acceleration = round(float(sympy.simplify(differentiate.subs({t: _time}))), 2)
+
+            print("")
+            print(("-" * 68).center(columns))
+            print("ANSWER\n".center(columns))
+            print(f"         Average Acceleration: {instantaneous_acceleration}m/s")
+            break
+        else:
+            clear(2)
 
 
 def ConstantAcceleration_FreeFall_Calculation(_usage):
@@ -316,7 +383,7 @@ def ConstantAcceleration_FreeFall_Calculation(_usage):
 
     while True:
         if _usage == "ConstantAcceleration":
-            direction = input("         Enter the direction(left/right): ")
+            direction = input("         Enter the direction(left/right): ").lower()
             if direction == "left" or direction == "right":
                 break
             else:
@@ -324,7 +391,7 @@ def ConstantAcceleration_FreeFall_Calculation(_usage):
 
         elif _usage == "FreeFall":
 
-            direction = input("         Enter the direction(upward/downward): ")
+            direction = input("         Enter the direction(upward/downward): ").lower()
             if direction == "upward" or direction == "downward":
                 break
             else:
@@ -711,18 +778,23 @@ def ConstantAcceleration_FreeFall_Calculation(_usage):
 
 
 def FindingVelocity_Displacement_from_Acceleration():
-    print("      Select an option you want to solve:")
-    print("         [1] Velocity and Displacement")
-    print("         [2] Time at Maximum Velocity and Maximum Displacement")
-    print("")
+    global fvda_select
+
+    if not in_solving:
+        print("      Select an option you want to solve:")
+        print("         [1] Velocity and Displacement")
+        print("         [2] Time at Maximum Velocity and Maximum Displacement")
+        print("")
 
     while True:
-        select = input("      Select: ")
-        print(("-" * 68).center(columns))
-        if select == "1":
+        if not in_solving:
+            fvda_select = input("      Select: ")
+            clear(5)
+
+        if fvda_select == "1":
             print("Solve for Velocity and Displacement".center(columns))
             break
-        elif select == "2":
+        elif fvda_select == "2":
             print("Solve for Time at Maximum Velocity and Maximum Displacement".center(columns))
             break
         else:
@@ -750,46 +822,25 @@ def FindingVelocity_Displacement_from_Acceleration():
     c = sympy.Symbol("c")
 
     print("")
-    given_velocity = None
-    given_v_time = None
+    given_velocity = float_input("         Enter the given velocity(m/s)          : ")
+    given_v_time = float_input("         Enter the given time(s) of velocity    : ")
+
     at_v_time = None
     max_velocity = None
-    given_position = None
-    given_p_time = None
+    if fvda_select == "1":
+        at_v_time = float_input("         Get the velocity at what time(s)?      : ")
+    elif fvda_select == "2":
+        max_velocity = float_input("         Enter the maximum velocity(m/s)        : ")
+
+    given_position = float_input("         Enter the given position(m)            : ")
+    given_p_time = float_input("         Enter the given time(s) of position    : ")
+
     at_p_time = None
     max_position = None
-    while True:
-        try:
-            if given_velocity is None:
-                given_velocity = float(input("         Enter the given velocity(m/s)          : "))
-
-            if given_v_time is None:
-                given_v_time = float(input("         Enter the given time(s) of velocity    : "))
-
-            if select == "1":
-                if at_v_time is None:
-                    at_v_time = float(input("         Get the velocity at what time(s)?      : "))
-                    print("")
-            elif select == "2":
-                if max_velocity is None:
-                    max_velocity = float(input("         Enter the maximum velocity(m/s)        : "))
-                    print("")
-
-            if given_position is None:
-                given_position = float(input("         Enter the given position(m)            : "))
-
-            if given_p_time is None:
-                given_p_time = float(input("         Enter the given time(s) of position    : "))
-
-            if select == "1":
-                if at_p_time is None:
-                    at_p_time = float(input("         Get the displacement at what time(s)?  : "))
-            elif select == "2":
-                if max_position is None:
-                    max_position = float(input("         Enter the maximum position(m)          : "))
-            break
-        except ValueError:
-            clear(1)
+    if fvda_select == "1":
+        at_p_time = float_input("         Get the displacement at what time(s)?  : ")
+    elif fvda_select == "2":
+        max_position = float_input("         Enter the maximum position(m)          : ")
 
     first_integration = sympy.integrate(equation, t)
     velocity_equation = sympy.Eq(v, first_integration + c)
@@ -804,19 +855,19 @@ def FindingVelocity_Displacement_from_Acceleration():
     formatted_velocity_function = f"v = {convert_to_fraction(velocity_function.rhs)}"
     formatted_displacement_function = f"x = {convert_to_fraction(displacement_function.rhs)}"
 
-    print("")
     print(("-" * 68).center(columns))
+    print("")
     print("ANSWER\n".center(columns))
     print(f"         Velocity function           : {str(formatted_velocity_function).replace("**", "^")}")
     print(f"         Displacement function       : {str(formatted_displacement_function).replace("**", "^")}")
 
-    if select == "1":
+    if fvda_select == "1":
         _velocity = round(float(sympy.solve(velocity_function.subs({t: at_v_time}), v)[0]), 2)
         _displacement = round(float(sympy.solve(displacement_function.subs({t: at_p_time}), x)[0]), 2)
 
         print(f"         Velocity at {f"{at_v_time}"+"s":<16}: {_velocity}m/s")
         print(f"         displacement at {f"{at_p_time}"+"s":<12}: {_displacement}m")
-    elif select == "2":
+    elif fvda_select == "2":
         v_time = sympy.solve(velocity_function.subs({v: max_velocity}), t)
         d_time = sympy.solve(displacement_function.subs({x: max_position}), t)
 
