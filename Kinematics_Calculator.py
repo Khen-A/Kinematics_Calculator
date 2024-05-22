@@ -2,6 +2,10 @@
 # Created by: Khen Jomarie L. Alcantara
 # Degree: BS Electronics And Communication Engineering
 # Level: 1st Year
+# This program used sympy library for integration and differentiation of equation
+# NOTE: To run this program you need to install sympy library first
+# For installation run this command: pip install sympy
+# Or manually install it in pycharm packages
 
 # Import library
 import os
