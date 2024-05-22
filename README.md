@@ -3,11 +3,6 @@
 
 Kinematics Calculator is a versatile console application that covers a wide range of kinematic scenarios, providing accurate and quick solutions. Whether you are calculating displacement over a time interval or determining the instantaneous velocity of an object, this tool streamlines the process, allowing users to focus on the conceptual understanding of kinematics rather than the computational intricacies.
 
-Displacement, Time Interval, and Average Velocity: Calculates the displacement of an object based on its average velocity and the time interval it travels. 
-•	Instantaneous Velocity: Computes the exact velocity of an object at a specific moment in time.
-•	Average and Instantaneous Acceleration: Provides tools to determine both average acceleration over a period and instantaneous acceleration at a specific point in time.
-
-
 **Features**
 - **Displacement, Time Interval, and Average Velocity:** Calculates the displacement of an object based on its average velocity and the time interval it travels.
 - **Instantaneous Velocity:** Computes the exact velocity of an object at a specific moment in time.
